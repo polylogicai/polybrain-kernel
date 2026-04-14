@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Polybrain — canon</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    background: #0a0a0a;
+    color: #fff;
+    font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+    overflow: hidden;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  #sphere {
+    width: 85vmin;
+    height: 85vmin;
+    max-width: 900px;
+    max-height: 900px;
+    display: block;
+    cursor: crosshair;
+  }
+  #counter {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: #666;
+    text-transform: uppercase;
+  }
+  #counter strong {
+    color: #fff;
+    font-weight: 400;
+  }
+  #legend {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: #444;
+    text-transform: uppercase;
+    display: flex;
+    gap: 18px;
+  }
+  #legend .dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  #detail {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    font-size: 11px;
+    color: #888;
+    max-width: 400px;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+  <div id="counter"><strong id="total">0</strong> rows · <strong id="verified">0</strong> verified · <strong id="challenged">0</strong> challenged</div>
+  <canvas id="sphere" width="900" height="900"></canvas>
+  <div id="legend">
+    <span><span class="dot" style="background:#4ade80"></span>VERIFIED</span>
+    <span><span class="dot" style="background:#22d3ee"></span>SURVIVED</span>
+    <span><span class="dot" style="background:#64748b"></span>PENDING</span>
+    <span><span class="dot" style="background:#F5A623"></span>CHALLENGED</span>
+    <span><span class="dot" style="background:#ef4444"></span>REFUTED</span>
+  </div>
+  <div id="detail"></div>
+<script>
+// §8 publisher reference implementation.
+//
+// TOTAL: every vertex in the view corresponds to exactly one canon row.
+// BOUNDED: the canvas fits one viewport; no scroll, no pagination.
+// NON-RANKING: point position is a Fibonacci-lattice projection of row_index
+//   to the unit sphere, then orthographic projection to 2D. Position depends
+//   only on row index and total count, not on verdict.
+// WRITE-CAPTURING: click events POST to /api/event, appending a view_event
+//   row to the canon and closing the loop.
+
+const VERDICT_COLORS = {
+  VERIFIED:   "#4ade80",
+  SURVIVED:   "#22d3ee",
+  PENDING:    "#64748b",
+  CHALLENGED: "#F5A623",
+  REFUTED:    "#ef4444",
+};
+
+const canvas = document.getElementById("sphere");
+const ctx = canvas.getContext("2d");
+let currentVertices = [];
+let rotationY = 0;
+
+// Rotate a 3D point around the Y axis.
+function rotY(p, angle) {
+  const c = Math.cos(angle), s = Math.sin(angle);
+  return { x: p.x * c + p.z * s, y: p.y, z: -p.x * s + p.z * c };
+}
+
+function drawFrame() {
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  const cx = w / 2, cy = h / 2;
+  const r = Math.min(w, h) * 0.42;
+
+  // Draw equator guide line (very subtle)
+  ctx.strokeStyle = "rgba(255,255,255,0.03)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Sort vertices by z so far-back points draw first (painter's algorithm)
+  const rotated = currentVertices.map(v => {
+    const p = rotY({ x: v.x, y: v.y, z: v.z }, rotationY);
+    return { ...v, rx: p.x, ry: p.y, rz: p.z };
+  });
+  rotated.sort((a, b) => a.rz - b.rz);
+
+  for (const v of rotated) {
+    const px = cx + v.rx * r;
+    const py = cy - v.ry * r;
+    // Depth shading: points facing the viewer are brighter
+    const depth = (v.rz + 1) / 2; // 0..1
+    const alpha = 0.35 + depth * 0.65;
+    const size = 2.5 + depth * 3;
+    ctx.fillStyle = VERDICT_COLORS[v.verdict] || VERDICT_COLORS.PENDING;
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.arc(px, py, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+async function refresh() {
+  try {
+    const res = await fetch("/api/view", { cache: "no-store" });
+    const j = await res.json();
+    currentVertices = j.vertices || [];
+    document.getElementById("total").textContent = j.total || 0;
+    document.getElementById("verified").textContent = currentVertices.filter(v => v.verdict === "VERIFIED").length;
+    document.getElementById("challenged").textContent = currentVertices.filter(v => v.verdict === "CHALLENGED").length;
+  } catch (_) {}
+}
+
+canvas.addEventListener("click", async (ev) => {
+  const rect = canvas.getBoundingClientRect();
+  const sx = (ev.clientX - rect.left) / rect.width;
+  const sy = (ev.clientY - rect.top) / rect.height;
+  // Write-capture: every click becomes a canon row.
+  await fetch("/api/event", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      kind: "click",
+      screen_x: sx,
+      screen_y: sy,
+      rotation_y: rotationY,
+      ts: new Date().toISOString(),
+    }),
+  });
+});
+
+// Dwell capture: every 10 seconds the view is still in focus, append one
+// dwell event. This closes the §8 write-capturing loop even without user
+// interaction.
+setInterval(async () => {
+  if (document.hidden) return;
+  await fetch("/api/event", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind: "dwell", duration_s: 10, ts: new Date().toISOString() }),
+  });
+}, 10000);
+
+function tick() {
+  rotationY += 0.002;
+  drawFrame();
+  requestAnimationFrame(tick);
+}
+
+refresh();
+setInterval(refresh, 2000);
+tick();
+</script>
+</body>
+</html>

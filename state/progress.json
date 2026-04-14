@@ -1,6 +1,6 @@
 {
-  "complete": 0.40,
-  "stage": "channels-and-experiment",
-  "label": "Channel A/B/C scorers, NeurIPS sampler, extractor, analysis, run — all tests passing",
-  "updated_at": "2026-04-14T17:05:00Z"
+  "complete": 0.55,
+  "stage": "coherence-publisher-self-mod",
+  "label": "§9 coherence + §8 4-predicate publisher + §10 self-mod gate — all live",
+  "updated_at": "2026-04-14T17:22:00Z"
 }

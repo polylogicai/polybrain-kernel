@@ -1,0 +1,17 @@
+{
+  "name": "polybrain-kernel",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Self-hostable reference implementation of Polybrain: engine, rules, canon. Paper: doi:10.5281/zenodo.19571656",
+  "license": "MIT",
+  "author": "Andrew Salvo <ajs10845@psu.edu>",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dashboard": "node tools/dashboard/server.mjs",
+    "start": "node src/kernel.mjs"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

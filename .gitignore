@@ -1,0 +1,22 @@
+node_modules/
+.DS_Store
+*.log
+
+# Canon is user-owned, never committed
+canon/*.jsonl
+!canon/.gitkeep
+
+# State files are transient (progress is tracked separately)
+state/*.json
+!state/progress.json
+!state/.gitkeep
+
+# Environment files never committed
+.env
+.env.*
+!.env.example
+
+# Build artifacts
+dist/
+build/
+*.tmp

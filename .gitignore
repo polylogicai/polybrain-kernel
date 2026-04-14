@@ -2,9 +2,12 @@ node_modules/
 .DS_Store
 *.log
 
-# Canon is user-owned, never committed
+# Canon is user-owned, never committed — EXCEPT the frozen experiment
+# canon, which is part of the v1.0.0-experiment scientific record and
+# must ship with the public kernel for replay verification.
 canon/*.jsonl
 !canon/.gitkeep
+!canon/rcc-n30-2026-04-14.jsonl
 
 # State files are transient (progress is tracked separately)
 state/*.json

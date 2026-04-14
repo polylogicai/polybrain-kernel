@@ -1,6 +1,6 @@
 {
-  "complete": 0.67,
-  "stage": "preregister-and-launch",
-  "label": "sampler fixed · frozen listing cached · relaunching",
-  "updated_at": "2026-04-14T18:05:00Z"
+  "complete": 0.725,
+  "stage": "experiment",
+  "label": "paper 4/30: Active Learning for Derivative-Based Global Sensitivity Anal",
+  "updated_at": "2026-04-14T17:15:44.232Z"
 }

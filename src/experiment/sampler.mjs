@@ -2,12 +2,23 @@
 // Deterministic NeurIPS 2024 sampler with stratified 10/10/10.
 // (Salvo 2026 §12.3 sampling frame, Appendix C.3)
 //
-// Selection is determined by SHA256(commit_hash || "sample-papers").
-// Sampling-frame hash (C.3) = SHA256 of the fetched snapshot.
-// The snapshot is cached at canon/neurips-cache/neurips-2024-listing.json.
+// Source: papers.nips.cc/paper_files/paper/2024 (the NeurIPS Foundation's
+// official accepted-paper listing). Each paper has:
+//   - a hash-based id derived from the URL
+//   - a title from the listing
+//   - an abstract fetched from hash/XXXX-Abstract-Conference.html on demand
 //
-// If the listing is unreachable, the run aborts rather than silently
-// substituting — preregistration integrity requires the committed frame.
+// Sampling:
+//   1. Fetch the listing (cached once at canon/neurips-cache/listing.json)
+//   2. Classify each paper by title into one of three strata
+//   3. Seeded shuffle within each stratum, take first `perStratum`
+//   4. For the 30 sampled papers, fetch abstracts (cached per-paper)
+//
+// Sampling-frame hash (C.3) = SHA256 of the listing snapshot's
+// {venue, count, sorted paper_ids}.
+//
+// The listing is cached after first fetch. The abstracts are cached per
+// paper hash. Replay determinism is preserved by the cache.
 
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile, access } from "node:fs/promises";
@@ -17,7 +28,21 @@ import { seededRng, deriveSampleSeed } from "./seed.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CACHE_DIR = join(__dirname, "..", "..", "canon", "neurips-cache");
-const VENUE_ID = "NeurIPS.cc/2024/Conference";
+const VENUE = "NeurIPS 2024";
+const LISTING_URL = "https://papers.nips.cc/paper_files/paper/2024";
+const ABSTRACT_URL_PREFIX = "https://papers.nips.cc";
+
+function stripHtml(s) {
+  return (s || "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 export function sampleFrameHash(snapshot) {
   const canonical = JSON.stringify({
@@ -30,47 +55,45 @@ export function sampleFrameHash(snapshot) {
 
 export async function fetchNeurips2024Listing() {
   await mkdir(CACHE_DIR, { recursive: true });
-  const cachePath = join(CACHE_DIR, "neurips-2024-listing.json");
+  const cachePath = join(CACHE_DIR, "listing.json");
   try {
     await access(cachePath);
     return JSON.parse(await readFile(cachePath, "utf-8"));
   } catch (e) {
     if (e.code !== "ENOENT") throw e;
   }
+  const res = await fetch(LISTING_URL, { signal: AbortSignal.timeout(30000) });
+  if (!res.ok) throw new Error(`papers.nips.cc HTTP ${res.status}`);
+  const html = await res.text();
+
+  // Parse each paper entry from the listing HTML
+  // <a title="paper title" href="/paper_files/paper/2024/hash/HASH-Abstract-Conference.html">TITLE</a>
+  const paperRegex =
+    /<a title="paper title" href="(\/paper_files\/paper\/2024\/hash\/([a-f0-9]+)-Abstract-Conference\.html)">([\s\S]*?)<\/a>/g;
+  const seen = new Set();
   const all_papers = [];
-  const base = `https://api2.openreview.net/notes?content.venueid=${encodeURIComponent(VENUE_ID)}&limit=1000`;
-  let offset = 0;
-  while (true) {
-    const res = await fetch(`${base}&offset=${offset}`, {
-      signal: AbortSignal.timeout(30000),
+  let match;
+  while ((match = paperRegex.exec(html)) !== null) {
+    const id = match[2];
+    if (seen.has(id)) continue;
+    seen.add(id);
+    all_papers.push({
+      id,
+      title: stripHtml(match[3]),
+      url: ABSTRACT_URL_PREFIX + match[1],
+      abstract: "",
+      venue: VENUE,
     });
-    if (!res.ok) throw new Error(`openreview HTTP ${res.status}`);
-    const json = await res.json();
-    const notes = json?.notes || [];
-    if (notes.length === 0) break;
-    for (const n of notes) {
-      all_papers.push({
-        id: n.id || n.forum,
-        title:
-          (typeof n.content?.title === "object"
-            ? n.content.title.value
-            : n.content?.title) || "",
-        abstract:
-          (typeof n.content?.abstract === "object"
-            ? n.content.abstract.value
-            : n.content?.abstract) || "",
-        keywords:
-          (typeof n.content?.keywords === "object"
-            ? n.content.keywords.value
-            : n.content?.keywords) || [],
-        venue: VENUE_ID,
-      });
-    }
-    offset += notes.length;
-    if (notes.length < 1000) break;
   }
+
+  if (all_papers.length < 30) {
+    throw new Error(
+      `papers.nips.cc listing parsed only ${all_papers.length} papers; expected thousands`,
+    );
+  }
+
   const snapshot = {
-    venue: VENUE_ID,
+    venue: VENUE,
     fetched_at: new Date().toISOString(),
     papers: all_papers,
   };
@@ -78,29 +101,52 @@ export async function fetchNeurips2024Listing() {
   return snapshot;
 }
 
+async function fetchAbstract(paper) {
+  const cachePath = join(CACHE_DIR, `abstract-${paper.id}.json`);
+  try {
+    await access(cachePath);
+    return JSON.parse(await readFile(cachePath, "utf-8"));
+  } catch (e) {
+    if (e.code !== "ENOENT") throw e;
+  }
+  const res = await fetch(paper.url, { signal: AbortSignal.timeout(30000) });
+  if (!res.ok) throw new Error(`fetch ${paper.url} HTTP ${res.status}`);
+  const html = await res.text();
+  // Match paper-abstract wrapper; inner <p> is nested inside the outer
+  // class="paper-abstract" <p>, so we take everything up to </section>.
+  const m = html.match(
+    /<p class="paper-abstract">([\s\S]*?)<\/p>\s*<\/section>/,
+  );
+  const abstract = m ? stripHtml(m[1]) : "";
+  const data = {
+    id: paper.id,
+    abstract,
+    fetched_at: new Date().toISOString(),
+  };
+  await writeFile(cachePath, JSON.stringify(data, null, 2));
+  return data;
+}
+
 function classifyStratum(paper) {
-  const blob = (
-    paper.title +
-    " " +
-    (Array.isArray(paper.keywords) ? paper.keywords.join(" ") : "") +
-    " " +
-    (paper.abstract || "").slice(0, 500)
-  ).toLowerCase();
+  const t = (paper.title || "").toLowerCase();
+  // Strata 3 — theoretical (stat.ML, cs.IT)
   if (
-    /information theory|pac learning|statistical learning theory|generalization bound|shannon|sample complexity|concentration inequality/.test(
-      blob,
+    /information theor|pac learning|statistical learning|generalization bound|shannon|sample complexity|concentration inequality|minimax|rate of convergence|regret bound|gradient descent convergence|optimal transport|martingale|bandit|spectral method/.test(
+      t,
     )
   ) {
-    return "strata_3"; // stat.ML, cs.IT — theoretical
+    return "strata_3";
   }
+  // Strata 2 — applied (cs.CL, cs.CV)
   if (
-    /natural language|machine translation|speech|image|vision|visual|text generation|dialogue|question answering|nlp|computer vision/.test(
-      blob,
+    /natural language|machine translation|speech|\bimage|vision|visual|text generation|dialogue|question answer|computer vision|detection|segmentation|recognition|caption|transformer|llm|large language|retrieval|document|video|3d reconstruction|nerf|diffusion model/.test(
+      t,
     )
   ) {
-    return "strata_2"; // cs.CL, cs.CV — applied
+    return "strata_2";
   }
-  return "strata_1"; // cs.LG, cs.AI — generalist ML
+  // Strata 1 — generalist ML (cs.LG, cs.AI)
+  return "strata_1";
 }
 
 export async function sampleStratified(snapshot, commitHash, perStratum = 10) {
@@ -108,7 +154,7 @@ export async function sampleStratified(snapshot, commitHash, perStratum = 10) {
   const rng = seededRng(seed);
   const stratified = { strata_1: [], strata_2: [], strata_3: [] };
   for (const p of snapshot.papers) {
-    if (!p.abstract || p.abstract.length < 200) continue;
+    if (!p.title || p.title.length < 5) continue;
     stratified[classifyStratum(p)].push(p);
   }
   const sample = [];
@@ -126,5 +172,15 @@ export async function sampleStratified(snapshot, commitHash, perStratum = 10) {
     }
     sample.push(...shuffled.slice(0, perStratum));
   }
+
+  // Fetch abstracts for the 30 sampled papers. Cached per-paper, so
+  // replay runs incur zero additional HTTP cost.
+  for (const p of sample) {
+    if (!p.abstract || p.abstract.length < 100) {
+      const data = await fetchAbstract(p);
+      p.abstract = data.abstract || "";
+    }
+  }
+
   return sample;
 }

@@ -1,0 +1,5 @@
+{
+  "id": "8815c983a1f46b477fe4fbf7042a3ba3",
+  "abstract": "We provide a new understanding of the stochastic gradient bandit algorithm by showing that it converges to a globally optimal policy almost surely using \\emph{any} constant learning rate. This result demonstrates that the stochastic gradient algorithm continues to balance exploration and exploitation appropriately even in scenarios where standard smoothness and noise control assumptions break down. The proofs are based on novel findings about action sampling rates and the relationship between cumulative progress and noise, and extend the current understanding of how simple stochastic gradient methods behave in bandit settings.",
+  "fetched_at": "2026-04-14T17:09:18.630Z"
+}

@@ -1,0 +1,7 @@
+{
+  "query": "Machine learning models can often fail on subgroups that are underrepresentedduring training. While dataset balancing can improve performance onunderperforming groups, it requires access to training group annotations and canend up removing large portions of the dataset. In this paper, we introduceData Debiasing with Datamodels (D3M), a debiasing approachwhich isolates and removes specific training examples that drive the model'sfailures on minority groups. Our approach enables us to efficiently traindebiased classifiers while removing only a small number of examples, and doesnot require training group annotations or additional hyperparameter tuning.",
+  "topK": 10,
+  "totalhits": 0,
+  "results": [],
+  "fetched_at": "2026-04-14T17:24:30.505Z"
+}

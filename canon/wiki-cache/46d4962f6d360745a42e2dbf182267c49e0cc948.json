@@ -1,0 +1,7 @@
+{
+  "query": "We study the classic problem of prediction with expert advice under bandit feedback. Our model assumes that one action, corresponding to the learner's abstention from play, has no reward or loss on every trial. We propose the CBA (Confidence-rated Bandits with Abstentions) algorithm, which exploits this assumption to obtain reward bounds that can significantly improve those of the classical Exp4 algorithm. Our problem can be construed as the aggregation of confidence-rated predictors, with the learner having the option to abstain from play. We are the first to achieve bounds on the expected cumulative reward for general confidence-rated predictors. In the special case of specialists, we achieve a novel reward bound, significantly improving previous bounds of SpecialistExp (treating abstention as another action). We discuss how CBA can be applied to the problem of adversarial contextual bandits with the option of abstaining from selecting any action. We are able to leverage a wide range of inductive biases, outperforming previous approaches both theoretically and in preliminary experimental analysis. Additionally, we achieve a reduction in runtime from quadratic to almost linear in the number of contexts for the specific case of metric space contexts.",
+  "topK": 10,
+  "totalhits": 0,
+  "results": [],
+  "fetched_at": "2026-04-14T17:45:40.088Z"
+}

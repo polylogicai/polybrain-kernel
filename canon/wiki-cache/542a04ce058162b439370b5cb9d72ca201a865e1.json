@@ -1,0 +1,7 @@
+{
+  "query": "Restless multi-armed bandits (RMAB) extend multi-armed bandits so arm pulls impact future arm states. Despite the success of RMABs, a key limiting assumption is the separability of rewards into a sum across arms. We address this deficiency by proposing restless-multi-armed bandit with global rewards (RMAB-G), a generalization of RMABs to global non-separable rewards. To solve RMAB-G, we develop the Linear-Whittle and Shapley-Whittle indices, which extend Whittle indices from RMABs to RMAB-Gs. We prove approximation bounds which demonstrate how Linear and Shapley-Whittle indices fail for non-linear rewards. To overcome this limitation, we propose two sets of adaptive policies: the first computes indices iteratively and the second combines indices with Monte-Carlo Tree Search (MCTS). Empirically, we demonstrate that adaptive policies outperform both pre-computed index policies and baselines in synthetic and real-world food rescue datasets.",
+  "topK": 10,
+  "totalhits": 0,
+  "results": [],
+  "fetched_at": "2026-04-14T17:57:51.419Z"
+}

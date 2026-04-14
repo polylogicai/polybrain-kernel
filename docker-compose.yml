@@ -1,0 +1,21 @@
+services:
+  polybrain:
+    build: .
+    image: polybrain-kernel:local
+    container_name: polybrain-kernel
+    restart: unless-stopped
+    ports:
+      - "4849:4849"
+      - "4850:4850"
+    volumes:
+      # User-owned canon persists across container restarts
+      - ./canon:/app/canon
+      # Rules are hot-reloadable from the host
+      - ./rules:/app/rules
+      # Progress file for the dashboard
+      - ./state:/app/state
+    env_file:
+      - .env
+    environment:
+      POLYBRAIN_DASHBOARD_PORT: "4849"
+      POLYBRAIN_PUBLISHER_PORT: "4850"

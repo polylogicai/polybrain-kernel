@@ -1,6 +1,6 @@
 {
-  "complete": 0.55,
-  "stage": "coherence-publisher-self-mod",
-  "label": "§9 coherence + §8 4-predicate publisher + §10 self-mod gate — all live",
-  "updated_at": "2026-04-14T17:22:00Z"
+  "complete": 0.65,
+  "stage": "release-engineering",
+  "label": "README + ARCHITECTURE + INVARIANTS + ROADMAP + REPRODUCE + Dockerfile + paper bundle all in",
+  "updated_at": "2026-04-14T17:40:00Z"
 }

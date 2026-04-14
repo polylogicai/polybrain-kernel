@@ -17,8 +17,8 @@ export const CHANNEL_A = [
 // Channel B: 2-2-2-1-1-1 across six disjoint-training-substrate providers.
 // Anthropic uses Sonnet 4.6 + Haiku 4.5 (cheap pair per budget decision).
 export const CHANNEL_B = [
-  { provider: "anthropic", model: "claude-sonnet-4-5-20250929", wire: "anthropic_messages", base_url: "https://api.anthropic.com/v1", key_env: "POLYBRAIN_ANTHROPIC_KEY" },
-  { provider: "anthropic", model: "claude-haiku-4-5-20251001",  wire: "anthropic_messages", base_url: "https://api.anthropic.com/v1", key_env: "POLYBRAIN_ANTHROPIC_KEY" },
+  { provider: "anthropic", model: "claude-sonnet-4-5",           wire: "anthropic_messages", base_url: "https://api.anthropic.com/v1", key_env: "POLYBRAIN_ANTHROPIC_KEY" },
+  { provider: "anthropic", model: "claude-haiku-4-5-20251001",   wire: "anthropic_messages", base_url: "https://api.anthropic.com/v1", key_env: "POLYBRAIN_ANTHROPIC_KEY" },
   { provider: "google",    model: "gemini-2.5-pro",             wire: "gemini_generate",    base_url: "https://generativelanguage.googleapis.com/v1beta", key_env: "GEMINI_API_KEY" },
   { provider: "google",    model: "gemini-2.5-flash",           wire: "gemini_generate",    base_url: "https://generativelanguage.googleapis.com/v1beta", key_env: "GEMINI_API_KEY" },
   { provider: "deepseek",  model: "deepseek-chat",              wire: "openai_compat",      base_url: "https://api.deepseek.com/v1", key_env: "DEEPSEEK_API_KEY" },

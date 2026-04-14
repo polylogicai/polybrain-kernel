@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use polybrain-kernel in research, please cite both the paper and the kernel at the commit hash you reproduced."
+title: "polybrain-kernel"
+abstract: "Self-hostable reference implementation of Polybrain: engine, rules, canon. A continuously-iterating user-owned AI agent runtime. Reference implementation for Salvo (2026), doi:10.5281/zenodo.19571656."
+type: software
+license: MIT
+repository-code: "https://github.com/polylogicai/polybrain-kernel"
+authors:
+  - family-names: Salvo
+    given-names: Andrew
+    email: ajs10845@psu.edu
+    affiliation: "Smeal College of Business, Penn State University"
+preferred-citation:
+  type: report
+  title: "Engine, Rules, and Canon: An Architecture for User-Owned, Continuously Iterating AI Agents"
+  authors:
+    - family-names: Salvo
+      given-names: Andrew
+      email: ajs10845@psu.edu
+      affiliation: "Smeal College of Business, Penn State University"
+  year: 2026
+  month: 4
+  day: 14
+  doi: 10.5281/zenodo.19571656
+  url: "https://doi.org/10.5281/zenodo.19571656"
+  institution: "Smeal College of Business, Penn State University"

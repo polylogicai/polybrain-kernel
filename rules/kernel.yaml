@@ -1,0 +1,23 @@
+# kernel.yaml
+# Kernel scheduling parameters.
+# See paper §6.
+
+# Gas pedal g ∈ [0, 1]. Background iteration rate.
+#   0 = idle (heartbeat only, no work dispatched)
+#   1 = maximum compute burn (work-item queue drained as fast as possible)
+# v1.0.0 ships a constant gas pedal. Auto-tuning controller is future work
+# (§13.3). The user may pin `g` by hand-editing this file.
+gas_pedal: 0.5
+
+# Per-item effort dial ε. Categorical per-work-item compute budget.
+# Options: reflex | consider | investigate | invent
+# Selected per-work-item as argmax_ε [E(ΔN | ε) / cost(ε)].
+default_effort: "consider"
+
+# Tick interval in milliseconds. The kernel wakes this often to check the
+# work-item queue.
+tick_ms: 100
+
+# Priority floor. Work items with priority below this are discarded at
+# enqueue time.
+priority_floor: 0

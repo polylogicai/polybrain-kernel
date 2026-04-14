@@ -1,0 +1,54 @@
+# witness.yaml
+# Witness stack configuration.
+# See paper §7.
+#
+# Every canon row is verified by an AND-composer over four deterministic
+# primitives: conservativity, ground-truth, falsification, cross-substrate.
+# The composer emits one of five public verdicts:
+#   VERIFIED | SURVIVED | PENDING | CHALLENGED | REFUTED
+
+primitives:
+  - conservativity
+  - ground_truth
+  - falsification
+  - cross_substrate
+
+# Conservativity primitive: token and numeric stability against the claim's
+# declared substrate. Pure function. No LLM involvement.
+conservativity:
+  # Minimum Jaccard token overlap for a claim to be considered conservative.
+  min_overlap: 0.6
+  # Numeric tolerance for matching numbers in the claim against the substrate.
+  numeric_tolerance: 0.01
+
+# Ground-truth primitive: authoritative external source comparison
+# (URL resolution, file existence, citation check).
+ground_truth:
+  method: "url_resolver"
+  max_fetch_bytes: 1048576
+  timeout_ms: 10000
+
+# Falsification primitive: attempted counter-example construction via a
+# structurally non-transformer checker (BM25 over Wikipedia KB).
+# This is the §9.2 Reviewer-Correlation Ceiling falsification arm.
+falsification:
+  method: "bm25_wiki_kb"
+  min_score: 0.35
+  top_k: 10
+
+# Cross-substrate primitive: agreement across independent provider stacks
+# at the categorical verdict level, not the token level.
+cross_substrate:
+  channel_a:
+    - openai
+    - xai
+    - groq
+    - moonshot
+  channel_b:
+    - anthropic
+    - google
+    - deepseek
+    - mistral
+    - cohere
+    - alibaba
+  temperature: 0

@@ -12,6 +12,7 @@
     "dashboard": "node tools/dashboard/server.mjs",
     "start": "node src/kernel.mjs"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "yaml": "^2.8.3"
+  }
 }

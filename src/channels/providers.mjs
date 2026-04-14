@@ -24,7 +24,7 @@ export const CHANNEL_B = [
   { provider: "deepseek",  model: "deepseek-chat",              wire: "openai_compat",      base_url: "https://api.deepseek.com/v1", key_env: "DEEPSEEK_API_KEY" },
   { provider: "deepseek",  model: "deepseek-reasoner",          wire: "openai_compat",      base_url: "https://api.deepseek.com/v1", key_env: "DEEPSEEK_API_KEY" },
   { provider: "mistral",   model: "mistral-large-latest",       wire: "openai_compat",      base_url: "https://api.mistral.ai/v1",   key_env: "MISTRAL_API_KEY" },
-  { provider: "cohere",    model: "command-r-plus",             wire: "openai_compat",      base_url: "https://api.cohere.com/compatibility/v1", key_env: "COHERE_API_KEY" },
+  { provider: "cohere",    model: "command-a-03-2025",          wire: "openai_compat",      base_url: "https://api.cohere.com/compatibility/v1", key_env: "COHERE_API_KEY" },
   { provider: "alibaba",   model: "qwen-max",                   wire: "openai_compat",      base_url: "https://dashscope-intl.aliyuncs.com/compatible-mode/v1", key_env: "DASHSCOPE_API_KEY" },
 ];
 

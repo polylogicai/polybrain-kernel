@@ -35,15 +35,24 @@ export function parseScoresFromText(text) {
     .replace(/```(?:json)?\s*/gi, "")
     .replace(/```/g, "")
     .trim();
+  // Outermost { to last matching } — robust to reasoning fields that
+  // contain literal braces.
+  const firstBrace = cleaned.indexOf("{");
+  const lastBrace = cleaned.lastIndexOf("}");
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
+    return null;
+  }
   try {
-    const match = cleaned.match(/\{[\s\S]*?"quality"[\s\S]*?\}/);
-    if (!match) return null;
-    const obj = JSON.parse(match[0]);
+    const obj = JSON.parse(cleaned.slice(firstBrace, lastBrace + 1));
     const q = Number(obj.quality);
     const a = Number(obj.adversarial);
     const f = Number(obj.feasibility);
-    if (!Number.isFinite(q) || !Number.isFinite(a) || !Number.isFinite(f)) return null;
-    if (q < 0 || q > 100 || a < 0 || a > 100 || f < 0 || f > 100) return null;
+    if (!Number.isFinite(q) || !Number.isFinite(a) || !Number.isFinite(f)) {
+      return null;
+    }
+    if (q < 0 || q > 100 || a < 0 || a > 100 || f < 0 || f > 100) {
+      return null;
+    }
     return { q, a, f, reasoning: String(obj.reasoning || "") };
   } catch {
     return null;

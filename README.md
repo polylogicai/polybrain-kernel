@@ -5,8 +5,10 @@
 
 **Paper**: *Engine, Rules, and Canon: An Architecture for User-Owned, Continuously Iterating AI Agents — With a Preregistered Protocol for Off-Model Verification* — Andrew Salvo, Smeal College of Business, Penn State University, 2026.
 
-**Concept DOI**: [`10.5281/zenodo.19571656`](https://doi.org/10.5281/zenodo.19571656)
-**v1 DOI**: [`10.5281/zenodo.19571657`](https://doi.org/10.5281/zenodo.19571657)
+**Preregistration paper concept DOI**: [`10.5281/zenodo.19571656`](https://doi.org/10.5281/zenodo.19571656) (v1: `19571657`)
+**Executed-result follow-up concept DOI**: [`10.5281/zenodo.19581035`](https://doi.org/10.5281/zenodo.19581035) (v1: `19581036`)
+**Theoretical precursor**: Salvo (2026a), *Agency Preservation Systems*, unpublished manuscript dated 2026-01-17
+**Cultural frame**: Hoffman & Beato (2025), *Superagency: What Could Possibly Go Right with Our AI Future*, Authors Equity
 **License (code)**: MIT · **License (paper)**: CC BY 4.0
 
 ---

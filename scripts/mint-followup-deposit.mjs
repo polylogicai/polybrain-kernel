@@ -105,8 +105,16 @@ const metadata = {
     access_right: "open",
     related_identifiers: [
       {
+        // DataCite relation `continues` = "this resource is a continuation
+        // of the referenced resource". The follow-up continues the
+        // preregistration paper.
         identifier: "10.5281/zenodo.19571656",
-        relation: "isContinuedBy",
+        relation: "continues",
+        resource_type: "publication",
+      },
+      {
+        identifier: "10.5281/zenodo.19571656",
+        relation: "cites",
         resource_type: "publication",
       },
       {

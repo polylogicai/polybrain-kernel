@@ -1,21 +1,31 @@
 {
-  "complete": 0.948,
+  "complete": 1.0,
   "total_minutes": 232,
-  "completed_minutes": 220,
-  "remaining_minutes": 12,
-  "eta_at": "2026-04-14T19:45:00Z",
-  "updated_at": "2026-04-14T19:33:00Z",
-  "stage": "task-R4",
-  "label": "R4 · committing follow-up + chat interface + progress-bar redesign",
+  "completed_minutes": 232,
+  "remaining_minutes": 0,
+  "eta_at": "2026-04-14T19:40:00Z",
+  "updated_at": "2026-04-14T19:40:00Z",
+  "stage": "released",
+  "label": "v1.0.0 shipped · paper + kernel public + follow-up deposit live",
   "tasks": [
     { "id": "R1", "name": "rewrite follow-up paper with APS + Superagency reframe", "minutes": 15, "status": "done" },
     { "id": "R2", "name": "rebuild follow-up paper.pdf via pandoc + xelatex", "minutes": 2, "status": "done" },
     { "id": "R3", "name": "port Polybrain Chatbot chat interface into public kernel", "minutes": 25, "status": "done" },
-    { "id": "R4", "name": "commit + push everything", "minutes": 2, "status": "in_progress" },
-    { "id": "R5", "name": "OTS stamp follow-up PDF", "minutes": 2, "status": "pending" },
-    { "id": "R6", "name": "update .gitignore + add canon file to repo", "minutes": 2, "status": "pending" },
-    { "id": "R7", "name": "mint fresh Zenodo concept DOI for follow-up deposit", "minutes": 3, "status": "pending" },
-    { "id": "R8", "name": "flip kernel repo visibility to public", "minutes": 1, "status": "pending" },
-    { "id": "R9", "name": "final commit + progress bar to 1.0", "minutes": 2, "status": "pending" }
-  ]
+    { "id": "R4", "name": "commit + push everything", "minutes": 2, "status": "done" },
+    { "id": "R5", "name": "OTS stamp follow-up PDF", "minutes": 2, "status": "done" },
+    { "id": "R6", "name": "update .gitignore + add canon file to repo", "minutes": 2, "status": "done" },
+    { "id": "R7", "name": "mint fresh Zenodo concept DOI for follow-up deposit", "minutes": 3, "status": "done" },
+    { "id": "R8", "name": "flip kernel repo visibility to public", "minutes": 1, "status": "done" },
+    { "id": "R9", "name": "final commit + progress bar to 1.0", "minutes": 2, "status": "done" }
+  ],
+  "release": {
+    "preregistration_doi_concept": "10.5281/zenodo.19571656",
+    "preregistration_doi_v1": "10.5281/zenodo.19571657",
+    "followup_doi_concept": "10.5281/zenodo.19581035",
+    "followup_doi_v1": "10.5281/zenodo.19581036",
+    "kernel_repo": "https://github.com/polylogicai/polybrain-kernel",
+    "kernel_tag": "v1.0.0-experiment",
+    "kernel_commit": "746a5c8becb512181c2cb174d074d486afe9e993",
+    "paper_hash": "7ac4e12fd0655445917eec391f6eb1e10cdb3cf9c195839aec6c833fb9be7eea"
+  }
 }

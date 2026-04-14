@@ -1,6 +1,6 @@
 {
-  "complete": 0.25,
-  "stage": "witness-stack",
-  "label": "4 primitives + AND-composer live, smoke tests passing",
-  "updated_at": "2026-04-14T16:48:00Z"
+  "complete": 0.40,
+  "stage": "channels-and-experiment",
+  "label": "Channel A/B/C scorers, NeurIPS sampler, extractor, analysis, run — all tests passing",
+  "updated_at": "2026-04-14T17:05:00Z"
 }

@@ -21,10 +21,10 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 48px;
+    gap: 28px;
   }
   #pct {
-    font-size: 200px;
+    font-size: 180px;
     font-weight: 100;
     letter-spacing: -8px;
     line-height: 1;
@@ -41,26 +41,150 @@
     height: 100%;
     background: #F5A623;
     width: 0%;
-    transition: width 450ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 600ms cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 0 24px rgba(245, 166, 35, 0.35);
+  }
+  #eta {
+    font-size: 42px;
+    font-weight: 200;
+    letter-spacing: -1px;
+    color: #F5A623;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    margin-top: 18px;
+  }
+  #eta-label {
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.28em;
+    color: #555;
+    text-transform: uppercase;
+    margin-top: -8px;
+  }
+  #task {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    color: #888;
+    text-transform: lowercase;
+    max-width: 70vw;
+    text-align: center;
+    line-height: 1.5;
+    margin-top: 14px;
+  }
+  #dot {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 12px rgba(74, 222, 128, 0.7);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.35; }
+    50%      { opacity: 1; }
+  }
+  #minutes {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    color: #444;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+  #stage {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    color: #444;
+    text-transform: uppercase;
   }
 </style>
 </head>
 <body>
+  <div id="dot"></div>
   <div id="pct">0%</div>
   <div id="bar"><div id="fill"></div></div>
+  <div id="eta">—:—</div>
+  <div id="eta-label">ETA remaining</div>
+  <div id="task"></div>
+  <div id="minutes"></div>
+  <div id="stage"></div>
 <script>
-  async function tick() {
+  // Client-computed ETA countdown: read eta_at as an absolute ISO timestamp
+  // and subtract Date.now() every 500ms. Keeps the countdown ticking
+  // between server polls so the number moves every frame instead of
+  // jumping at poll intervals.
+
+  let etaAtMs = null;
+  let remainingMinutes = null;
+  let completedMinutes = null;
+  let totalMinutes = null;
+
+  function fmtCountdown(msRemaining) {
+    if (msRemaining == null || !Number.isFinite(msRemaining)) return '—:—';
+    if (msRemaining <= 0) return '0:00';
+    const totalSecs = Math.round(msRemaining / 1000);
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    const s = totalSecs % 60;
+    const pad = (n) => String(n).padStart(2, '0');
+    if (h > 0) return `${h}:${pad(m)}:${pad(s)}`;
+    return `${m}:${pad(s)}`;
+  }
+
+  async function pollState() {
     try {
       const r = await fetch('/state', { cache: 'no-store' });
       const j = await r.json();
       const pct = Math.max(0, Math.min(100, Math.round((j.complete || 0) * 100)));
       document.getElementById('pct').textContent = pct + '%';
       document.getElementById('fill').style.width = pct + '%';
+
+      if (j.eta_at) {
+        etaAtMs = new Date(j.eta_at).getTime();
+      } else if (j.remaining_minutes != null && j.updated_at) {
+        const updatedMs = new Date(j.updated_at).getTime();
+        etaAtMs = updatedMs + j.remaining_minutes * 60 * 1000;
+      } else {
+        etaAtMs = null;
+      }
+
+      remainingMinutes = j.remaining_minutes ?? null;
+      completedMinutes = j.completed_minutes ?? null;
+      totalMinutes = j.total_minutes ?? null;
+
+      document.getElementById('task').textContent = j.label || j.stage || '';
+      document.getElementById('stage').textContent = j.stage || '';
+
+      if (totalMinutes != null && completedMinutes != null) {
+        document.getElementById('minutes').textContent =
+          `${Math.round(completedMinutes)} / ${Math.round(totalMinutes)} min`;
+      } else {
+        document.getElementById('minutes').textContent = '';
+      }
     } catch (_) {}
   }
-  setInterval(tick, 500);
-  tick();
+
+  function tickClient() {
+    if (etaAtMs != null) {
+      const remaining = etaAtMs - Date.now();
+      document.getElementById('eta').textContent = fmtCountdown(remaining);
+    }
+  }
+
+  setInterval(pollState, 2000);
+  setInterval(tickClient, 500);
+  pollState();
 </script>
 </body>
 </html>

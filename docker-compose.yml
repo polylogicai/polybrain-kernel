@@ -5,8 +5,9 @@ services:
     container_name: polybrain-kernel
     restart: unless-stopped
     ports:
-      - "4849:4849"
-      - "4850:4850"
+      - "4849:4849"   # build/run progress dashboard
+      - "4850:4850"   # §8 Fibonacci-sphere publisher
+      - "4851:4851"   # chat-first consumer surface ("Own your AI.")
     volumes:
       # User-owned canon persists across container restarts
       - ./canon:/app/canon
@@ -19,3 +20,4 @@ services:
     environment:
       POLYBRAIN_DASHBOARD_PORT: "4849"
       POLYBRAIN_PUBLISHER_PORT: "4850"
+      POLYBRAIN_CHAT_PORT: "4851"

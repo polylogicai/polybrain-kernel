@@ -1,6 +1,21 @@
 {
-  "complete": 0.99,
-  "stage": "experiment",
-  "label": "analysis complete",
-  "updated_at": "2026-04-14T17:57:51.429Z"
+  "complete": 0.948,
+  "total_minutes": 232,
+  "completed_minutes": 220,
+  "remaining_minutes": 12,
+  "eta_at": "2026-04-14T19:45:00Z",
+  "updated_at": "2026-04-14T19:33:00Z",
+  "stage": "task-R4",
+  "label": "R4 · committing follow-up + chat interface + progress-bar redesign",
+  "tasks": [
+    { "id": "R1", "name": "rewrite follow-up paper with APS + Superagency reframe", "minutes": 15, "status": "done" },
+    { "id": "R2", "name": "rebuild follow-up paper.pdf via pandoc + xelatex", "minutes": 2, "status": "done" },
+    { "id": "R3", "name": "port Polybrain Chatbot chat interface into public kernel", "minutes": 25, "status": "done" },
+    { "id": "R4", "name": "commit + push everything", "minutes": 2, "status": "in_progress" },
+    { "id": "R5", "name": "OTS stamp follow-up PDF", "minutes": 2, "status": "pending" },
+    { "id": "R6", "name": "update .gitignore + add canon file to repo", "minutes": 2, "status": "pending" },
+    { "id": "R7", "name": "mint fresh Zenodo concept DOI for follow-up deposit", "minutes": 3, "status": "pending" },
+    { "id": "R8", "name": "flip kernel repo visibility to public", "minutes": 1, "status": "pending" },
+    { "id": "R9", "name": "final commit + progress bar to 1.0", "minutes": 2, "status": "pending" }
+  ]
 }

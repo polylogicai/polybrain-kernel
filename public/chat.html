@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Polybrain · Own your AI</title>
+<style>
+  :root {
+    --amber: #F5A623;
+    --navy: #1E3A5F;
+    --bg: #0a0a0a;
+    --fg: #fff;
+    --muted: #666;
+    --faint: rgba(255, 255, 255, 0.06);
+    --panel: rgba(255, 255, 255, 0.03);
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+  header {
+    padding: 48px 48px 0 48px;
+    flex-shrink: 0;
+  }
+  h1 {
+    font-size: 34px;
+    font-weight: 200;
+    letter-spacing: -1px;
+    margin: 0 0 4px 0;
+  }
+  h1 .amber {
+    color: var(--amber);
+  }
+  .tagline {
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .counters {
+    position: fixed;
+    top: 56px;
+    right: 48px;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .counters strong {
+    color: #fff;
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+  }
+  #stream {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 48px 24px 48px;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .turn {
+    margin-bottom: 22px;
+    line-height: 1.55;
+    font-size: 15px;
+  }
+  .turn.user {
+    color: #bbb;
+  }
+  .turn.assistant {
+    background: var(--panel);
+    border-left: 2px solid var(--amber);
+    padding: 16px 20px;
+    color: #eee;
+  }
+  .turn.system {
+    font-size: 13px;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .witness-trace {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dotted rgba(255, 255, 255, 0.08);
+  }
+  .witness-trace .primitive {
+    display: inline-block;
+    margin-right: 18px;
+  }
+  .verdict-PASS { color: #4ade80; }
+  .verdict-FAIL, .verdict-REFUTED { color: #ef4444; }
+  .verdict-PENDING { color: #64748b; }
+  .verdict-VERIFIED { color: #4ade80; }
+  .verdict-SURVIVED { color: #22d3ee; }
+  .verdict-CHALLENGED { color: var(--amber); }
+  .greeting {
+    background: var(--panel);
+    padding: 20px 24px;
+    color: #ccc;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  #composer {
+    flex-shrink: 0;
+    padding: 18px 48px 36px 48px;
+    border-top: 1px solid var(--faint);
+    background: var(--bg);
+  }
+  .composer-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  #input {
+    flex: 1;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: var(--fg);
+    padding: 14px 18px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+  }
+  #input::placeholder {
+    color: #555;
+  }
+  #input:focus {
+    border-color: var(--amber);
+  }
+  #send {
+    background: var(--amber);
+    color: #000;
+    border: none;
+    padding: 14px 24px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  #send:hover {
+    background: #ffb733;
+  }
+  #send:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  #sphere-slot {
+    position: fixed;
+    left: 32px;
+    bottom: 100px;
+    width: 120px;
+    height: 120px;
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  @media (max-width: 720px) {
+    header { padding: 24px 20px 0 20px; }
+    .counters { top: 28px; right: 20px; }
+    #stream { padding: 20px 20px 16px 20px; }
+    #composer { padding: 14px 20px 24px 20px; }
+    h1 { font-size: 26px; }
+    #sphere-slot { display: none; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Own your <span class="amber">AI</span>.</h1>
+    <p class="tagline">YOUR MACHINE · YOUR TOOLS · YOUR LIFE</p>
+  </header>
+  <div class="counters"><strong id="remember">0</strong> THINGS I REMEMBER · <strong id="heldup">0</strong> HELD UP</div>
+
+  <div id="stream">
+    <div class="greeting" id="greeting">
+      I'm Polybrain. The first AI you actually own. I run on your machine, plug into your real tools with your keys, and remember everything we decide together. Nothing leaves unless you say so. To start: say something you want me to check.
+    </div>
+  </div>
+
+  <div id="composer">
+    <div class="composer-inner">
+      <input id="input" type="text" placeholder="Say something you want me to check..." autofocus>
+      <button id="send">CHECK</button>
+    </div>
+  </div>
+
+  <canvas id="sphere-slot"></canvas>
+
+<script>
+  const stream = document.getElementById('stream');
+  const input = document.getElementById('input');
+  const sendBtn = document.getElementById('send');
+  const rememberEl = document.getElementById('remember');
+  const heldupEl = document.getElementById('heldup');
+
+  async function refreshCounters() {
+    try {
+      const r = await fetch('/api/counters', { cache: 'no-store' });
+      const j = await r.json();
+      rememberEl.textContent = j.things_i_remember ?? 0;
+      heldupEl.textContent = j.held_up ?? 0;
+    } catch (_) {}
+  }
+
+  function appendTurn(role, text, opts = {}) {
+    const div = document.createElement('div');
+    div.className = 'turn ' + role;
+    div.textContent = text;
+    if (opts.traceHtml) {
+      const trace = document.createElement('div');
+      trace.className = 'witness-trace';
+      trace.innerHTML = opts.traceHtml;
+      div.appendChild(trace);
+    }
+    stream.appendChild(div);
+    stream.scrollTop = stream.scrollHeight;
+    return div;
+  }
+
+  async function submit() {
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    sendBtn.disabled = true;
+
+    appendTurn('user', text);
+
+    const assistantDiv = appendTurn('assistant', '');
+    let assistantText = '';
+    let witnessVerdict = null;
+    let witnessTraceHtml = '';
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+
+        let boundary;
+        while ((boundary = buf.indexOf('\n\n')) !== -1) {
+          const chunk = buf.slice(0, boundary);
+          buf = buf.slice(boundary + 2);
+
+          const lines = chunk.split('\n');
+          let event = 'message';
+          let data = '';
+          for (const line of lines) {
+            if (line.startsWith('event: ')) event = line.slice(7);
+            else if (line.startsWith('data: ')) data += line.slice(6);
+          }
+          if (!data) continue;
+          let parsed;
+          try { parsed = JSON.parse(data); } catch { continue; }
+
+          if (event === 'witness_result') {
+            witnessVerdict = parsed.verdict;
+            const primBits = Object.entries(parsed.primitives || {}).map(
+              ([k, v]) => `<span class="primitive">${k.replace(/_/g, ' ')}: <span class="verdict-${v.verdict}">${v.verdict || '—'}</span></span>`
+            );
+            witnessTraceHtml = primBits.join('') +
+              ` <span class="primitive">verdict: <span class="verdict-${witnessVerdict}">${witnessVerdict}</span></span>`;
+          } else if (event === 'responder_result') {
+            assistantText = parsed.text || '';
+            assistantDiv.textContent = assistantText;
+            if (witnessTraceHtml) {
+              const trace = document.createElement('div');
+              trace.className = 'witness-trace';
+              trace.innerHTML = witnessTraceHtml;
+              assistantDiv.appendChild(trace);
+            }
+            stream.scrollTop = stream.scrollHeight;
+          } else if (event === 'error') {
+            assistantDiv.textContent = '[error] ' + (parsed.message || 'unknown');
+            assistantDiv.style.color = '#ef4444';
+          }
+        }
+      }
+    } catch (e) {
+      assistantDiv.textContent = '[network error] ' + (e.message || e);
+      assistantDiv.style.color = '#ef4444';
+    }
+
+    sendBtn.disabled = false;
+    input.focus();
+    refreshCounters();
+  }
+
+  sendBtn.addEventListener('click', submit);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      submit();
+    }
+  });
+
+  refreshCounters();
+  setInterval(refreshCounters, 4000);
+
+  // Minimal Fibonacci sphere in the corner (echo of the publisher's visual)
+  const canvas = document.getElementById('sphere-slot');
+  canvas.width = 240;
+  canvas.height = 240;
+  const ctx = canvas.getContext('2d');
+  const POINTS = 72;
+  let rotY = 0;
+  function fib(i, n) {
+    const phi = Math.PI * (3 - Math.sqrt(5));
+    const y = 1 - (i / Math.max(1, n - 1)) * 2;
+    const r = Math.sqrt(1 - y * y);
+    const t = phi * i;
+    return { x: Math.cos(t) * r, y, z: Math.sin(t) * r };
+  }
+  function drawSphere() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const R = canvas.width * 0.42;
+    const pts = [];
+    for (let i = 0; i < POINTS; i++) {
+      const p = fib(i, POINTS);
+      const c = Math.cos(rotY), s = Math.sin(rotY);
+      pts.push({ x: p.x * c + p.z * s, y: p.y, z: -p.x * s + p.z * c });
+    }
+    pts.sort((a, b) => a.z - b.z);
+    for (const p of pts) {
+      const depth = (p.z + 1) / 2;
+      ctx.fillStyle = `rgba(245, 166, 35, ${0.25 + depth * 0.6})`;
+      ctx.beginPath();
+      ctx.arc(cx + p.x * R, cy - p.y * R, 1.4 + depth * 1.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  function loop() {
+    rotY += 0.004;
+    drawSphere();
+    requestAnimationFrame(loop);
+  }
+  loop();
+</script>
+</body>
+</html>

@@ -10,11 +10,12 @@ COPY . .
 
 # Ports:
 #   4849 — build/run progress dashboard
-#   4850 — §8 four-predicate publisher
-EXPOSE 4849 4850
+#   4850 — §8 four-predicate Fibonacci-sphere publisher
+#   4851 — chat-first consumer surface ("Own your AI.")
+EXPOSE 4849 4850 4851
 
-# Start all three services (dashboard, publisher, kernel) in one container.
+# Start all four services (dashboard, publisher, chat, kernel) in one container.
 # The kernel is the foreground process so docker tracks its lifecycle;
-# dashboard and publisher run in the background sharing the container's
+# dashboard, publisher, and chat run in the background sharing the container's
 # filesystem (canon/, state/, rules/).
-CMD ["sh", "-c", "node tools/dashboard/server.mjs & node src/publisher.mjs & exec node src/kernel.mjs"]
+CMD ["sh", "-c", "node tools/dashboard/server.mjs & node src/publisher.mjs & node src/chat.mjs & exec node src/kernel.mjs"]

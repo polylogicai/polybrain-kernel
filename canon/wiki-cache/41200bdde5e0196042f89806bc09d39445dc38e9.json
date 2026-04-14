@@ -1,0 +1,53 @@
+{
+  "query": "The speed of light in vacuum is exactly 299792458 meters per second",
+  "topK": 10,
+  "totalhits": 9,
+  "results": [
+    {
+      "title": "Speed of light",
+      "snippet": "The speed of light in vacuum, often called simply the speed of light and commonly denoted c, is a universal physical constant exactly equal to 299792458 m⋅s−1",
+      "wordcount": 14795
+    },
+    {
+      "title": "Metre per second",
+      "snippet": "definition of metre, 1 m/s is exactly ⁠1/299792458⁠ of the speed of light. The SI unit symbols are m/s, m·s−1, m s−1, or ⁠m/s⁠. 1 m/s is equivalent to:",
+      "wordcount": 775
+    },
+    {
+      "title": "Speed",
+      "snippet": " is the speed of light in vacuum c = 299792458 metres per second (approximately 1079000000 km/h or 671000000 mph). Matter cannot reach the speed of light",
+      "wordcount": 1592
+    },
+    {
+      "title": "International System of Units",
+      "snippet": "units. The defining constants are the speed of light in vacuum c, the hyperfine transition frequency of caesium ΔνCs, the Planck constant h, the elementary",
+      "wordcount": 6000
+    },
+    {
+      "title": "Radiation pressure",
+      "snippet": "{E_{p}}{c}},} where p is momentum, h is the Planck constant, λ is wavelength, and c is speed of light in vacuum. And Ep is the energy of a single photon given",
+      "wordcount": 5368
+    },
+    {
+      "title": "List of conversion factors",
+      "snippet": " The symbol g0 is used to denote standard gravity in order to avoid confusion with the (upright) g symbol for gram. A velocity consists of a speed combined",
+      "wordcount": 1619
+    },
+    {
+      "title": "SI base unit",
+      "snippet": "in metrology to define the kilogram in terms of a fundamental constant, in the same way that the metre is now defined in terms of the speed of light.",
+      "wordcount": 809
+    },
+    {
+      "title": "Glossary of engineering: M–Z",
+      "snippet": "waves, and the force carrier for the electromagnetic force. Photons are massless, so they always move at the speed of light in vacuum, 299792458 m/s (or",
+      "wordcount": 31086
+    },
+    {
+      "title": "Arc measurement of Delambre and Méchain",
+      "snippet": "numerical value of the speed of light in vacuum c to be 299792458 when expressed in the unit m⋅s−1, where the second is defined in terms of the caesium frequency",
+      "wordcount": 10577
+    }
+  ],
+  "fetched_at": "2026-04-14T16:39:42.875Z"
+}

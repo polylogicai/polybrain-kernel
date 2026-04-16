@@ -1,9 +1,11 @@
 name: Polybrain Kernel Daemon
 on:
   schedule:
-    # Every 6 hours: 00:00, 06:00, 12:00, 18:00 UTC
     - cron: '0 */6 * * *'
-  workflow_dispatch: # Manual trigger
+  workflow_dispatch:
+
+env:
+  ALERT_EMAIL: ajs10845@psu.edu
 
 jobs:
   run-kernel:
@@ -19,7 +21,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run kernel experiment cycle
+      - name: Run kernel tick
+        id: kernel
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -28,9 +31,32 @@ jobs:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
-          echo "Polybrain kernel daemon tick $(date -u)"
-          node src/kernel.mjs --cycles=10 --timeout=600 2>&1 || true
-          echo "Daemon tick complete"
+          echo "Polybrain kernel daemon tick $(date -u)" | tee /tmp/daemon-report.txt
+          echo "---" >> /tmp/daemon-report.txt
+
+          # Count canon rows before
+          BEFORE=$(wc -l < canon/default.jsonl 2>/dev/null || echo 0)
+          echo "canon_before=$BEFORE" >> /tmp/daemon-report.txt
+
+          # Run kernel (bounded: timeout after 10 min)
+          timeout 600 node src/kernel.mjs 2>&1 | tee -a /tmp/daemon-report.txt || true
+
+          # Count canon rows after
+          AFTER=$(wc -l < canon/default.jsonl 2>/dev/null || echo 0)
+          DELTA=$((AFTER - BEFORE))
+          echo "---" >> /tmp/daemon-report.txt
+          echo "canon_after=$AFTER" >> /tmp/daemon-report.txt
+          echo "new_rows=$DELTA" >> /tmp/daemon-report.txt
+
+          # Read NetTrust if state file exists
+          if [ -f state/progress.json ]; then
+            echo "progress=$(cat state/progress.json)" >> /tmp/daemon-report.txt
+          fi
+
+          echo "completed=$(date -u)" >> /tmp/daemon-report.txt
+          echo "REPORT<<EOF" >> $GITHUB_OUTPUT
+          cat /tmp/daemon-report.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Commit canon changes
         run: |
@@ -43,3 +69,34 @@ jobs:
             git commit -m "daemon: kernel tick $(date -u +%Y-%m-%dT%H:%M:%SZ)"
             git push
           fi
+
+      - name: Email report
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        if: always()
+        run: |
+          REPORT="${{ steps.kernel.outputs.REPORT }}"
+          STATUS="${{ job.status }}"
+          SUBJECT="Polybrain Kernel: $STATUS $(date -u +%Y-%m-%d\ %H:%M)"
+
+          # Use Resend API if key available, otherwise use the GH Actions summary
+          if [ -n "$RESEND_API_KEY" ]; then
+            curl -s -X POST https://api.resend.com/emails \
+              -H "Authorization: Bearer $RESEND_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"from\": \"Polybrain Daemon <alerts@polylogicai.com>\",
+                \"to\": \"$ALERT_EMAIL\",
+                \"subject\": \"$SUBJECT\",
+                \"text\": $(echo "$REPORT" | jq -Rs .)
+              }" || echo "Email send failed (non-fatal)"
+          else
+            echo "No RESEND_API_KEY, skipping email. Report:"
+            echo "$REPORT"
+          fi
+
+          # Always write to GH Actions summary
+          echo "## Polybrain Kernel Daemon Report" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "$REPORT" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

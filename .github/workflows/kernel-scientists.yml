@@ -1,0 +1,69 @@
+name: Kernel Scientists
+on:
+  workflow_run:
+    workflows: ["Polybrain Kernel Daemon"]
+    types: [completed]
+  workflow_dispatch:
+
+env:
+  ALERT_EMAIL: ajs10845@psu.edu
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Analyze daemon output
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: node scripts/analyze-daemon.mjs 2>&1 | tee /tmp/scientist-report.txt
+
+      - name: Create issue if findings
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if grep -q "FINDING:" /tmp/scientist-report.txt; then
+            TITLE="Daemon analysis: $(date -u +%Y-%m-%d)"
+            BODY=$(cat /tmp/scientist-report.txt)
+            gh issue create --title "$TITLE" --body "$BODY" --label "daemon-analysis" || true
+          fi
+
+      - name: Email digest
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        if: always()
+        run: |
+          REPORT=$(cat /tmp/scientist-report.txt 2>/dev/null || echo "No report generated")
+          STATUS="${{ job.status }}"
+          SUBJECT="Kernel Scientists: $STATUS $(date -u +%Y-%m-%d\ %H:%M)"
+
+          if [ -n "$RESEND_API_KEY" ]; then
+            curl -s -X POST https://api.resend.com/emails \
+              -H "Authorization: Bearer $RESEND_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"from\": \"Polybrain Scientists <alerts@polylogicai.com>\",
+                \"to\": \"$ALERT_EMAIL\",
+                \"subject\": \"$SUBJECT\",
+                \"text\": $(echo "$REPORT" | jq -Rs .)
+              }" || echo "Email send failed (non-fatal)"
+          else
+            echo "No RESEND_API_KEY, skipping email. Report:"
+            echo "$REPORT"
+          fi
+
+          echo "## Kernel Scientists Report" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "$REPORT" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

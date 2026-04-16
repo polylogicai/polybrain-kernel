@@ -1,0 +1,45 @@
+name: Polybrain Kernel Daemon
+on:
+  schedule:
+    # Every 6 hours: 00:00, 06:00, 12:00, 18:00 UTC
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  run-kernel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run kernel experiment cycle
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          echo "Polybrain kernel daemon tick $(date -u)"
+          node src/kernel.mjs --cycles=10 --timeout=600 2>&1 || true
+          echo "Daemon tick complete"
+
+      - name: Commit canon changes
+        run: |
+          git config user.name "Polybrain Daemon"
+          git config user.email "daemon@polylogicai.com"
+          git add canon/ state/ 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No canon changes to commit"
+          else
+            git commit -m "daemon: kernel tick $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            git push
+          fi

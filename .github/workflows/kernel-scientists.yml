@@ -45,8 +45,22 @@ jobs:
         if: always()
         run: |
           REPORT=$(cat /tmp/scientist-report.txt 2>/dev/null || echo "No report generated")
-          STATUS="${{ job.status }}"
-          SUBJECT="Kernel Scientists: $STATUS $(date -u +%Y-%m-%d\ %H:%M)"
+
+          # Subject severity derives from report CONTENT, not job.status.
+          # job.status is "success" whenever node exits 0, even when the
+          # report contains [CRITICAL] findings. The subject must reflect
+          # what the scientist actually found, or the mailbox lies.
+          # 2026-04-17 Andy: "this is still a big failure mode use bateson"
+          if echo "$REPORT" | grep -q "\[CRITICAL\]"; then
+            SEVERITY="CRITICAL"
+          elif echo "$REPORT" | grep -q "\[WARNING\]"; then
+            SEVERITY="WARNING"
+          elif echo "$REPORT" | grep -q "FINDING:"; then
+            SEVERITY="finding"
+          else
+            SEVERITY="ok"
+          fi
+          SUBJECT="Kernel Scientists [$SEVERITY]: $(date -u +%Y-%m-%d\ %H:%M)"
 
           if [ -n "$RESEND_API_KEY" ]; then
             curl -s -X POST https://api.resend.com/emails \

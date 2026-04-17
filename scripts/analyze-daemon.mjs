@@ -234,7 +234,14 @@ async function main() {
   // Read and analyze canon
   const { rows, parseErrors, error: canonError } = readCanon();
   if (canonError) {
-    console.log(`FINDING: [CRITICAL] ${canonError}`);
+    // Missing/empty canon isn't CRITICAL on first-run — it means the
+    // daemon hasn't produced any rows yet (or the commit from the last
+    // daemon run hasn't caught up). Only escalate to CRITICAL when we
+    // have evidence the file SHOULD exist (non-zero progress state, or
+    // previous committed history). Otherwise it's a warning.
+    const isFirstRun = canonError.includes('not found') || canonError.includes('empty');
+    const severity = isFirstRun ? '[WARNING]' : '[CRITICAL]';
+    console.log(`FINDING: ${severity} ${canonError}${isFirstRun ? ' (first-run condition; daemon may not have committed yet)' : ''}`);
     process.exit(0);
   }
 

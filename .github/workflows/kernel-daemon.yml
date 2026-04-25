@@ -87,7 +87,7 @@ jobs:
             git push
           fi
 
-      - name: Email report
+      - name: Email report (only on failure — silence-is-default)
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           # Pass report + status via env vars so backticks / $() / shell
@@ -102,6 +102,25 @@ jobs:
         if: always()
         run: |
           SUBJECT="Polybrain Kernel: $JOB_STATUS $(date -u +%Y-%m-%d\ %H:%M)"
+
+          # Always write the audit trail to the GH Actions step summary so
+          # every tick is inspectable in the workflow run UI. But only EMAIL
+          # on failure — silence-is-default. Andy's inbox was getting one
+          # "Polybrain Kernel: success" email every 6h, which is noise. The
+          # workflow conclusion + the canon row hash chain are the two
+          # honest fingerprints; the email matters only when something
+          # broke. Scientists handles the WARNING/CRITICAL email channel
+          # for analyzed-anomaly events (drift, broken chain, etc.).
+          echo "## Polybrain Kernel Daemon Report" >> $GITHUB_STEP_SUMMARY
+          echo "Status: $JOB_STATUS" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "$REPORT" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+          if [ "$JOB_STATUS" = "success" ]; then
+            echo "Daemon succeeded — skipping email (silence-is-default)."
+            exit 0
+          fi
 
           # Use Resend API if key available, otherwise use the GH Actions summary
           if [ -n "$RESEND_API_KEY" ]; then
@@ -118,9 +137,3 @@ jobs:
             echo "No RESEND_API_KEY, skipping email. Report:"
             echo "$REPORT"
           fi
-
-          # Always write to GH Actions summary
-          echo "## Polybrain Kernel Daemon Report" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "$REPORT" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY

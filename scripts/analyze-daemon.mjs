@@ -234,29 +234,23 @@ async function main() {
   // Read and analyze canon
   const { rows, parseErrors, error: canonError } = readCanon();
   if (canonError) {
-    // Missing/empty canon is the EXPECTED state when the kernel daemon
-    // is running but no operators are registered — by design, src/
-    // kernel.mjs is domain-agnostic and only writes rows when external
-    // operators (channels, experiment, witness stack) enqueue work.
-    // Until operators are wired in, every tick will produce zero rows
-    // and canon will not exist on remote. That's not a warning; it's
-    // the v1.0.0-experiment shape.
+    // After 2026-04-24 substrate fix, scripts/run-daemon.mjs writes a
+    // daemon_heartbeat row to canon/default.jsonl on every tick. The
+    // signal of "operators have run" is now state/daemon-progress.json,
+    // NOT state/progress.json (which is the v1.0.0 release tracker, an
+    // unrelated frozen artifact).
     //
-    // Escalate ONLY when we have evidence the file SHOULD exist:
-    //   - state/progress.json is non-empty AND parses (operators ran)
-    //   - canon was non-empty in a prior run (not detectable here without
-    //     external state, so this is conservative — leaves CRITICAL for
-    //     parse errors, which we never reach if canonError fires).
-    const progressForCheck = readProgress();
-    const operatorsHaveRun =
-      !progressForCheck.error &&
-      progressForCheck &&
-      typeof progressForCheck === 'object' &&
-      Object.keys(progressForCheck).length > 0;
-    const severity = operatorsHaveRun ? '[CRITICAL]' : '[INFO]';
-    const tail = operatorsHaveRun
-      ? ' (progress state shows operators have run, so canon should exist)'
-      : ' (kernel daemon idle; no operators registered yet — expected v1.0.0-experiment state)';
+    //   - daemon-progress.json present → daemon has run, canon SHOULD
+    //     exist → severity [CRITICAL] (real bug: the heartbeat or push
+    //     is broken)
+    //   - daemon-progress.json absent → daemon hasn't run yet on this
+    //     branch / first-run condition → severity [INFO]
+    const DAEMON_PROGRESS_PATH = resolve(ROOT, 'state/daemon-progress.json');
+    const daemonHasRun = existsSync(DAEMON_PROGRESS_PATH);
+    const severity = daemonHasRun ? '[CRITICAL]' : '[INFO]';
+    const tail = daemonHasRun
+      ? ' (state/daemon-progress.json shows the daemon has run; canon should exist on origin/main — push or heartbeat may be broken)'
+      : ' (daemon has not yet run on this branch — first-run condition, expected)';
     console.log(`FINDING: ${severity} ${canonError}${tail}`);
     process.exit(0);
   }

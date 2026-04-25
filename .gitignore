@@ -20,6 +20,7 @@ canon/*.jsonl
 # State files are transient (progress is tracked separately)
 state/*.json
 !state/progress.json
+!state/daemon-progress.json
 !state/.gitkeep
 
 # Environment files never committed

@@ -45,8 +45,17 @@ jobs:
           BEFORE=$(wc -l < canon/default.jsonl 2>/dev/null || echo 0)
           echo "canon_before=$BEFORE" >> /tmp/daemon-report.txt
 
-          # Run kernel (bounded: timeout after 10 min)
-          timeout 600 node src/kernel.mjs 2>&1 | tee -a /tmp/daemon-report.txt || true
+          # 2026-04-24 substrate fix: prior invocation was
+          #   timeout 600 node src/kernel.mjs
+          # which booted the kernel into a 10-min idle loop with operators=0,
+          # producing zero canon rows. Until external operators are wired
+          # into the daemon, scripts/run-daemon.mjs is the autonomous canon
+          # emitter — appends one daemon_heartbeat row per tick so canon
+          # grows, the file lands on origin/main, and Scientists has
+          # something to analyze. Bounded by a 60s timeout because the
+          # heartbeat is a constant-time append; anything longer means
+          # something's wrong.
+          timeout 60 node scripts/run-daemon.mjs 2>&1 | tee -a /tmp/daemon-report.txt || true
 
           # Count canon rows after
           AFTER=$(wc -l < canon/default.jsonl 2>/dev/null || echo 0)
@@ -55,9 +64,10 @@ jobs:
           echo "canon_after=$AFTER" >> /tmp/daemon-report.txt
           echo "new_rows=$DELTA" >> /tmp/daemon-report.txt
 
-          # Read NetTrust if state file exists
-          if [ -f state/progress.json ]; then
-            echo "progress=$(cat state/progress.json)" >> /tmp/daemon-report.txt
+          # Read daemon-progress (runtime state) — distinct from the v1.0.0
+          # release tracker at state/progress.json which is frozen.
+          if [ -f state/daemon-progress.json ]; then
+            echo "daemon_progress=$(cat state/daemon-progress.json)" >> /tmp/daemon-report.txt
           fi
 
           echo "completed=$(date -u)" >> /tmp/daemon-report.txt

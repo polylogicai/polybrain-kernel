@@ -234,14 +234,30 @@ async function main() {
   // Read and analyze canon
   const { rows, parseErrors, error: canonError } = readCanon();
   if (canonError) {
-    // Missing/empty canon isn't CRITICAL on first-run — it means the
-    // daemon hasn't produced any rows yet (or the commit from the last
-    // daemon run hasn't caught up). Only escalate to CRITICAL when we
-    // have evidence the file SHOULD exist (non-zero progress state, or
-    // previous committed history). Otherwise it's a warning.
-    const isFirstRun = canonError.includes('not found') || canonError.includes('empty');
-    const severity = isFirstRun ? '[WARNING]' : '[CRITICAL]';
-    console.log(`FINDING: ${severity} ${canonError}${isFirstRun ? ' (first-run condition; daemon may not have committed yet)' : ''}`);
+    // Missing/empty canon is the EXPECTED state when the kernel daemon
+    // is running but no operators are registered — by design, src/
+    // kernel.mjs is domain-agnostic and only writes rows when external
+    // operators (channels, experiment, witness stack) enqueue work.
+    // Until operators are wired in, every tick will produce zero rows
+    // and canon will not exist on remote. That's not a warning; it's
+    // the v1.0.0-experiment shape.
+    //
+    // Escalate ONLY when we have evidence the file SHOULD exist:
+    //   - state/progress.json is non-empty AND parses (operators ran)
+    //   - canon was non-empty in a prior run (not detectable here without
+    //     external state, so this is conservative — leaves CRITICAL for
+    //     parse errors, which we never reach if canonError fires).
+    const progressForCheck = readProgress();
+    const operatorsHaveRun =
+      !progressForCheck.error &&
+      progressForCheck &&
+      typeof progressForCheck === 'object' &&
+      Object.keys(progressForCheck).length > 0;
+    const severity = operatorsHaveRun ? '[CRITICAL]' : '[INFO]';
+    const tail = operatorsHaveRun
+      ? ' (progress state shows operators have run, so canon should exist)'
+      : ' (kernel daemon idle; no operators registered yet — expected v1.0.0-experiment state)';
+    console.log(`FINDING: ${severity} ${canonError}${tail}`);
     process.exit(0);
   }
 

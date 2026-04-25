@@ -46,7 +46,7 @@ jobs:
             gh issue create --title "$TITLE" --body "$BODY" --label "daemon-analysis" || true
           fi
 
-      - name: Email digest
+      - name: Email digest (only on WARNING/CRITICAL — silence-is-default)
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         if: always()
@@ -69,6 +69,22 @@ jobs:
           fi
           SUBJECT="Kernel Scientists [$SEVERITY]: $(date -u +%Y-%m-%d\ %H:%M)"
 
+          # Always write to the GH Actions step summary so the audit trail
+          # is complete, but only EMAIL on WARNING/CRITICAL. Andy's mailbox
+          # was getting one [WARNING] every 6h forever because the kernel
+          # daemon is structurally idle (0 operators) until ops are wired
+          # in — that's [INFO], not warning-worthy. 2026-04-24.
+          echo "## Kernel Scientists Report" >> $GITHUB_STEP_SUMMARY
+          echo "Severity: $SEVERITY" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "$REPORT" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+          if [ "$SEVERITY" != "WARNING" ] && [ "$SEVERITY" != "CRITICAL" ]; then
+            echo "Severity=$SEVERITY — skipping email (silence-is-default)."
+            exit 0
+          fi
+
           if [ -n "$RESEND_API_KEY" ]; then
             curl -s -X POST https://api.resend.com/emails \
               -H "Authorization: Bearer $RESEND_API_KEY" \
@@ -83,8 +99,3 @@ jobs:
             echo "No RESEND_API_KEY, skipping email. Report:"
             echo "$REPORT"
           fi
-
-          echo "## Kernel Scientists Report" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "$REPORT" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY

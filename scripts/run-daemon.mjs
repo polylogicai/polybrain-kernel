@@ -49,6 +49,8 @@ const CANON_PATH = join(ROOT, "canon", "default.jsonl");
 const QUEUE_PATH = join(ROOT, "claims", "witness-queue.jsonl");
 const PROGRESS_PATH = join(ROOT, "state", "daemon-progress.json");
 
+const FETCH_TIMEOUT_MS = 10_000;
+
 async function loadQueue(path) {
   const txt = await readFile(path, "utf-8");
   return txt
@@ -56,6 +58,80 @@ async function loadQueue(path) {
     .map((l) => l.trim())
     .filter(Boolean)
     .map((l) => JSON.parse(l));
+}
+
+async function fetchSubstrate(url) {
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, {
+      signal: ctrl.signal,
+      headers: {
+        "User-Agent":
+          "polybrain-kernel-daemon/1.0 (+https://github.com/polylogicai/polybrain-kernel)",
+        Accept:
+          "application/json, text/html, application/xml, text/plain, */*",
+      },
+      redirect: "follow",
+    });
+    const body = await res.text();
+    return { ok: res.ok, status: res.status, body };
+  } catch (e) {
+    return { ok: false, status: 0, body: "", error: String(e?.message || e) };
+  } finally {
+    clearTimeout(tid);
+  }
+}
+
+async function runWitness(entry) {
+  // Self-coherence claims: substrate is a file in the repo. Pure-function
+  // conservativity. Drift = someone refactored the source and the claim
+  // no longer holds.
+  if (entry.substrate_path) {
+    const substrateAbsPath = resolve(ROOT, entry.substrate_path);
+    const result = await conservativity({
+      text: entry.claim,
+      substratePath: substrateAbsPath,
+    });
+    return { result, substrate_ref: entry.substrate_path, substrate_kind: "local_file" };
+  }
+
+  // External attestation claims: substrate is a live HTTP URL. Conservativity
+  // runs against the response body. Drift = the live page changed in a way
+  // that breaks the claim. Network blips → PENDING (not warning-worthy);
+  // real content drift or sustained outage → FAIL (warning).
+  if (entry.substrate_url) {
+    const fetched = await fetchSubstrate(entry.substrate_url);
+    if (!fetched.ok) {
+      const detail = fetched.error
+        ? `fetch error: ${fetched.error}`
+        : `HTTP ${fetched.status} from ${entry.substrate_url}`;
+      // Non-2xx is treated as PENDING — transient reachability problem,
+      // not a content-drift FAIL. Sustained outages will accumulate
+      // PENDINGs that the analyzer can flag separately if needed.
+      return {
+        result: { verdict: "PENDING", detail },
+        substrate_ref: entry.substrate_url,
+        substrate_kind: "http_fetch",
+      };
+    }
+    const result = await conservativity({
+      text: entry.claim,
+      substrateText: fetched.body,
+    });
+    return {
+      result,
+      substrate_ref: entry.substrate_url,
+      substrate_kind: "http_fetch",
+      http_status: fetched.status,
+    };
+  }
+
+  return {
+    result: { verdict: "PENDING", detail: "no substrate specified" },
+    substrate_ref: null,
+    substrate_kind: "none",
+  };
 }
 
 async function main() {
@@ -89,16 +165,17 @@ async function main() {
   );
 
   // ---------------------------------------------------------------------
-  // Step 2: run conservativity against the substrate file.
-  //   Pure function. No API calls. Replay-verifiable forever.
+  // Step 2: run the witness against the appropriate substrate.
+  //   substrate_path  → local file (self-coherence, drift on refactor)
+  //   substrate_url   → live HTTP fetch (external attestation, drift on
+  //                     content change or outage)
+  //   Conservativity is pure — same (claim, substrate) → same verdict
+  //   forever. Replay-verifiable.
   // ---------------------------------------------------------------------
-  const substrateAbsPath = resolve(ROOT, entry.substrate_path);
-  const witnessResult = await conservativity({
-    text: entry.claim,
-    substratePath: substrateAbsPath,
-  });
+  const witness = await runWitness(entry);
+  const witnessResult = witness.result;
   console.log(
-    `conservativity verdict: ${witnessResult.verdict} (${witnessResult.detail})`,
+    `${witness.substrate_kind} witness verdict: ${witnessResult.verdict} (${witnessResult.detail})`,
   );
 
   // ---------------------------------------------------------------------
@@ -108,7 +185,9 @@ async function main() {
   const witnessRow = await canon.append("claim_witness", {
     claim_id: entry.id,
     claim_text: entry.claim,
-    substrate_path: entry.substrate_path,
+    substrate_kind: witness.substrate_kind,
+    substrate_ref: witness.substrate_ref,
+    http_status: witness.http_status ?? null,
     witness_primitive: "conservativity",
     verdict: witnessResult.verdict,
     detail: witnessResult.detail,

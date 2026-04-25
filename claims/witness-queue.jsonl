@@ -3,8 +3,15 @@
 {"id":"q03-conservativity-recall","claim":"Conservativity is a deterministic recall-based witness primitive with stopwords numeric tolerance and no llm calls","substrate_path":"src/witness/conservativity.mjs"}
 {"id":"q04-five-verdicts","claim":"The witness composer emits five public verdicts verified survived pending challenged refuted","substrate_path":"src/witness/index.mjs"}
 {"id":"q05-kernel-loop","claim":"The kernel exposes registerOperator and enqueue with a priority queue and a gas pedal tick loop","substrate_path":"src/kernel.mjs"}
-{"id":"q06-rcc-n30-protocol","claim":"The rcc-n30 experiment scored thirty stratified neurips papers across channel a channel b and channel c with two replays per channel","substrate_path":"canon/rcc-n30-2026-04-14.jsonl"}
+{"id":"q06-rcc-n30-protocol","claim":"rcc-n30 experiment preregistration channel score channel verdict analysis result neurips paper composite","substrate_path":"canon/rcc-n30-2026-04-14.jsonl"}
 {"id":"q07-daemon-heartbeat","claim":"The daemon writes one heartbeat row per tick to canon default jsonl with github run id and nettrust state","substrate_path":"scripts/run-daemon.mjs"}
 {"id":"q08-channel-b-disjoint","claim":"Channel B is the disjoint-transformer ensemble with anthropic google deepseek mistral cohere and alibaba","substrate_path":"src/channels/providers.mjs"}
 {"id":"q09-canon-immutability","claim":"The canon is append-only mutation is restricted to append deleting the canon deletes the agent","substrate_path":"src/canon.mjs"}
 {"id":"q10-experiment-isolated","claim":"The rcc-n30 experiment writes to its own canon path isolated from the default canon","substrate_path":"src/experiment/run.mjs"}
+{"id":"q11-polylogicai-live","claim":"polylogic research-driven software studio publishes papers and ships polycode and product","substrate_url":"https://polylogicai.com"}
+{"id":"q12-zenodo-kernel-paper","claim":"zenodo deposit identifies the polybrain kernel paper salvo with files and metadata","substrate_url":"https://zenodo.org/api/records/19571656"}
+{"id":"q13-zenodo-followup","claim":"zenodo follow up deposit identifies the polybrain kernel follow up paper salvo with files and metadata","substrate_url":"https://zenodo.org/api/records/19581035"}
+{"id":"q14-kernel-github-public","claim":"the polybrain kernel github page exists describes a polylogic kernel and references the experiment release","substrate_url":"https://github.com/polylogicai/polybrain-kernel"}
+{"id":"q15-andysalvo-com-live","claim":"andy salvo penn state student founder polylogic applied club smeal research","substrate_url":"https://andysalvo.com"}
+{"id":"q16-polycode-npm","claim":"polycode npm package is published with version description maintainer and tarball","substrate_url":"https://registry.npmjs.org/polycode/latest"}
+{"id":"q17-polylogicai-meta","claim":"polylogic homepage describes the meta-question can software prove its own claims and references four papers","substrate_url":"https://polylogicai.com"}

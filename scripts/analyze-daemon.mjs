@@ -184,7 +184,7 @@ Output ONLY finding lines. No preamble, no explanation, no markdown.`;
 // 4. Local anomaly detection (no LLM needed)
 // ---------------------------------------------------------------------------
 
-function localFindings(canonAnalysis, progress) {
+function localFindings(canonAnalysis, progress, latestWitness) {
   const findings = [];
 
   if (canonAnalysis.total === 0) {
@@ -216,7 +216,35 @@ function localFindings(canonAnalysis, progress) {
   }
 
   if (progress.error) {
-    findings.push(`FINDING: [WARNING] Progress state: ${progress.error}`);
+    // state/progress.json is the v1.0.0 release tracker, not runtime state.
+    // Its absence/parse-failure is informational, not warning-worthy. The
+    // runtime fingerprint lives in state/daemon-progress.json (handled in
+    // the canonError branch upstream).
+    findings.push(`FINDING: [INFO] Release tracker state/progress.json: ${progress.error}`);
+  }
+
+  // 2026-04-25: drift detection on the witness loop. Each tick runs
+  // conservativity against one claim from claims/witness-queue.jsonl. If
+  // the LATEST claim_witness row produced a FAIL verdict, the kernel's
+  // self-coherence has drifted (someone refactored a substrate file and
+  // a claim about it no longer holds). One [WARNING] per drift event,
+  // not per tick — the analyzer only flags the latest, so the alarm
+  // moves with the canon's tip.
+  if (latestWitness && latestWitness.payload?.verdict === 'FAIL') {
+    findings.push(
+      `FINDING: [WARNING] Latest claim_witness FAILED: ${latestWitness.payload.claim_id} against ${latestWitness.payload.substrate_path} — ${latestWitness.payload.detail}. Kernel self-coherence drift detected.`
+    );
+  }
+
+  // [INFO] roll-up so the report has substance even when nothing's wrong.
+  const witnessRows = (canonAnalysis.byType.claim_witness || 0);
+  if (witnessRows > 0) {
+    const passes = canonAnalysis.verdicts.PASS || 0;
+    const fails = canonAnalysis.verdicts.FAIL || 0;
+    const pendings = canonAnalysis.verdicts.PENDING || 0;
+    findings.push(
+      `FINDING: [INFO] Witness loop: ${witnessRows} claim_witness rows · ${passes} PASS · ${fails} FAIL · ${pendings} PENDING.`
+    );
   }
 
   return findings;
@@ -257,6 +285,9 @@ async function main() {
 
   const canonAnalysis = analyzeCanon(rows, parseErrors || []);
 
+  // Latest claim_witness row (used by localFindings to emit drift warnings).
+  const latestWitness = [...rows].reverse().find((r) => r.type === 'claim_witness') || null;
+
   console.log(`Canon rows: ${canonAnalysis.total}`);
   console.log(`Types: ${JSON.stringify(canonAnalysis.byType)}`);
   console.log(`Verdicts: ${JSON.stringify(canonAnalysis.verdicts)}`);
@@ -272,7 +303,7 @@ async function main() {
   console.log('');
 
   // Local deterministic checks
-  const local = localFindings(canonAnalysis, progress);
+  const local = localFindings(canonAnalysis, progress, latestWitness);
   if (local.length > 0) {
     console.log('--- Local Checks ---');
     for (const f of local) console.log(f);

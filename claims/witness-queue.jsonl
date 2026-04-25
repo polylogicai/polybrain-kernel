@@ -1,0 +1,10 @@
+{"id":"q01-canon-sha256","claim":"The kernel canon uses sha-256 per-row hash chaining where each row prev_hash references the previous row_hash","substrate_path":"src/canon.mjs"}
+{"id":"q02-channel-a-pool","claim":"Channel A is the self-pool transformer ensemble that includes openai gpt-4.1-mini grok-3-mini groq qwen and moonshot kimi-k2-instruct","substrate_path":"src/channels/providers.mjs"}
+{"id":"q03-conservativity-recall","claim":"Conservativity is a deterministic recall-based witness primitive with stopwords numeric tolerance and no llm calls","substrate_path":"src/witness/conservativity.mjs"}
+{"id":"q04-five-verdicts","claim":"The witness composer emits five public verdicts verified survived pending challenged refuted","substrate_path":"src/witness/index.mjs"}
+{"id":"q05-kernel-loop","claim":"The kernel exposes registerOperator and enqueue with a priority queue and a gas pedal tick loop","substrate_path":"src/kernel.mjs"}
+{"id":"q06-rcc-n30-protocol","claim":"The rcc-n30 experiment scored thirty stratified neurips papers across channel a channel b and channel c with two replays per channel","substrate_path":"canon/rcc-n30-2026-04-14.jsonl"}
+{"id":"q07-daemon-heartbeat","claim":"The daemon writes one heartbeat row per tick to canon default jsonl with github run id and nettrust state","substrate_path":"scripts/run-daemon.mjs"}
+{"id":"q08-channel-b-disjoint","claim":"Channel B is the disjoint-transformer ensemble with anthropic google deepseek mistral cohere and alibaba","substrate_path":"src/channels/providers.mjs"}
+{"id":"q09-canon-immutability","claim":"The canon is append-only mutation is restricted to append deleting the canon deletes the agent","substrate_path":"src/canon.mjs"}
+{"id":"q10-experiment-isolated","claim":"The rcc-n30 experiment writes to its own canon path isolated from the default canon","substrate_path":"src/experiment/run.mjs"}

@@ -7,6 +7,13 @@ on:
 env:
   ALERT_EMAIL: ajs10845@psu.edu
 
+# Repo default_workflow_permissions is "read" (verified 2026-04-24). Without
+# this block the GITHUB_TOKEN cannot push canon commits — the entire reason
+# this daemon exists. The Commit canon changes step has been silently 403'ing
+# every 6h since launch.
+permissions:
+  contents: write
+
 jobs:
   run-kernel:
     runs-on: ubuntu-latest
@@ -73,11 +80,18 @@ jobs:
       - name: Email report
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          # Pass report + status via env vars so backticks / $() / shell
+          # metacharacters in the kernel's stdout don't get evaluated.
+          # Prior bug (2026-04-24): REPORT="${{ steps.kernel.outputs.REPORT }}"
+          # was template-substituted into the bash script literally, and any
+          # backtick in the kernel's output would trigger command substitution
+          # — observed: `shipped: command not found` exit 127, daemon failed,
+          # canon never got committed, Scientists emailed WARNING for weeks.
+          REPORT: ${{ steps.kernel.outputs.REPORT }}
+          JOB_STATUS: ${{ job.status }}
         if: always()
         run: |
-          REPORT="${{ steps.kernel.outputs.REPORT }}"
-          STATUS="${{ job.status }}"
-          SUBJECT="Polybrain Kernel: $STATUS $(date -u +%Y-%m-%d\ %H:%M)"
+          SUBJECT="Polybrain Kernel: $JOB_STATUS $(date -u +%Y-%m-%d\ %H:%M)"
 
           # Use Resend API if key available, otherwise use the GH Actions summary
           if [ -n "$RESEND_API_KEY" ]; then

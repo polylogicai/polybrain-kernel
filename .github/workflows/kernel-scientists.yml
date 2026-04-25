@@ -8,6 +8,13 @@ on:
 env:
   ALERT_EMAIL: ajs10845@psu.edu
 
+# Repo default_workflow_permissions is "read". Scientists creates issues via
+# `gh issue create` on findings; without issues:write it 403's silently and
+# only the email goes out.
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   analyze:
     runs-on: ubuntu-latest

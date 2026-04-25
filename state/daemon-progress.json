@@ -1,7 +1,7 @@
 {
-  "last_tick_at": "2026-04-25T02:40:52.233Z",
-  "last_run_id": "24920659183",
-  "canon_rows_after": 1,
-  "last_heartbeat_hash": "13f3e0775f77f7f722570ca11628b5f4abb619b9e1580f0262c188226956e988",
+  "last_tick_at": "2026-04-25T07:09:12.941Z",
+  "last_run_id": "24925383013",
+  "canon_rows_after": 2,
+  "last_heartbeat_hash": "0fad7ab36a1ff9641b871dc6e1e6e5b7ba5b80bff0047ddf247c7324041c3e12",
   "daemon_started_writing_canon_at": "2026-04-24T22:00:00Z"
 }

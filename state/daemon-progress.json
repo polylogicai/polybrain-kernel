@@ -1,13 +1,13 @@
 {
-  "last_tick_at": "2026-04-30T19:14:23.537Z",
-  "last_run_id": "25184512252",
-  "canon_rows_after": 51,
-  "last_heartbeat_hash": "3d4c934038d7b5638b9a8490398d1ccbf666a1ac6d4a5150522cb55aa72a4773",
+  "last_tick_at": "2026-05-01T02:41:45.340Z",
+  "last_run_id": "25199722596",
+  "canon_rows_after": 53,
+  "last_heartbeat_hash": "4c499bc4b58b6b422dec69f7f46131afb1a5963514e4b6bbf018006a998b7d1a",
   "last_witness": {
-    "claim_id": "q07-daemon-heartbeat",
+    "claim_id": "q08-channel-b-disjoint",
     "verdict": "PASS",
-    "detail": "recall 0.64 ≥ 0.6, numerics matched",
-    "row_hash": "9eaf904285e33cc9022ae62efb3453c52b6d506935440462c13572da8e72c53a"
+    "detail": "recall 0.89 ≥ 0.6, numerics matched",
+    "row_hash": "1c6a3b295adaeeed01c7e2396fe39235054a6a3e30ecbf619e2bc6f4213456f7"
   },
   "daemon_started_writing_canon_at": "2026-04-24T22:00:00Z",
   "daemon_started_witness_loop_at": "2026-04-25T13:00:00Z"

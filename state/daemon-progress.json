@@ -1,13 +1,13 @@
 {
-  "last_tick_at": "2026-05-16T07:58:54.294Z",
-  "last_run_id": "25956748410",
-  "canon_rows_after": 171,
-  "last_heartbeat_hash": "a86bf532b121adca8fafd20906b697f003b7d3c18d6efc737c7aca70268ac1a8",
+  "last_tick_at": "2026-05-16T13:14:01.978Z",
+  "last_run_id": "25962849559",
+  "canon_rows_after": 173,
+  "last_heartbeat_hash": "b4b805a89f332cad07370354499007fa508e3aad04a32093837eef71bcec3c21",
   "last_witness": {
-    "claim_id": "q16-polycode-npm",
-    "verdict": "PASS",
-    "detail": "recall 0.63 ≥ 0.6, numerics matched",
-    "row_hash": "561a8245f08c783a42aa7ed5b87159ce0acba12fa74d912fdc2b204236aee523"
+    "claim_id": "q17-polylogicai-meta",
+    "verdict": "PENDING",
+    "detail": "HTTP 404 from https://polylogicai.com",
+    "row_hash": "e7fcb83edd34f695a1f73262728b7a42bc10bc785cc57f421ff9677a97145ef3"
   },
   "daemon_started_writing_canon_at": "2026-04-24T22:00:00Z",
   "daemon_started_witness_loop_at": "2026-04-25T13:00:00Z"

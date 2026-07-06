@@ -1,13 +1,13 @@
 {
-  "last_tick_at": "2026-07-06T02:45:39.610Z",
-  "last_run_id": "28764440936",
-  "canon_rows_after": 577,
-  "last_heartbeat_hash": "fd51948c992974004fc82255f1d785b2582a04264c17b907f39e29984f739a0f",
+  "last_tick_at": "2026-07-06T10:09:17.937Z",
+  "last_run_id": "28783966449",
+  "canon_rows_after": 579,
+  "last_heartbeat_hash": "2b0ed19403f941aca95fb0541c5e423535e7e35fc3f237f3330a0eea7bcaa328",
   "last_witness": {
-    "claim_id": "q15-andysalvo-com-live",
+    "claim_id": "q16-polycode-npm",
     "verdict": "PASS",
-    "detail": "recall 0.82 ≥ 0.6, numerics matched",
-    "row_hash": "83321c9154d8b84d13b218210024192ecc09666308d35d6eeb54c4c459ba2f3b"
+    "detail": "recall 0.63 ≥ 0.6, numerics matched",
+    "row_hash": "4b83de20626309d0edd8b31658f6dd3219f4c9a3995e6392fbeb26452929dbf5"
   },
   "daemon_started_writing_canon_at": "2026-04-24T22:00:00Z",
   "daemon_started_witness_loop_at": "2026-04-25T13:00:00Z"

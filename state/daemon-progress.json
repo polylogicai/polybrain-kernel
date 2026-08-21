@@ -1,13 +1,13 @@
 {
-  "last_tick_at": "2026-08-21T12:36:48.380Z",
-  "last_run_id": "32482701650",
-  "canon_rows_after": 949,
-  "last_heartbeat_hash": "068691e0c68ab64a7f9b4ce4c86418abe36fa2c6ddb5de978e50bb37d165a28d",
+  "last_tick_at": "2026-08-21T18:29:20.988Z",
+  "last_run_id": "32513587097",
+  "canon_rows_after": 951,
+  "last_heartbeat_hash": "d57bc15957a64b843cb208048c098c60f11c5ca52b22d5985410091e95f6bd43",
   "last_witness": {
-    "claim_id": "q14-kernel-github-public",
+    "claim_id": "q15-andysalvo-com-live",
     "verdict": "PASS",
-    "detail": "recall 0.70 ≥ 0.6, numerics matched",
-    "row_hash": "3a0a02dd33e4fc7915287d6ca7edaa18e28f3259318bb66d92de158c4efec2d7"
+    "detail": "recall 0.73 ≥ 0.6, numerics matched",
+    "row_hash": "93737515b659576672a4f8f3c3dc90df79806fb53cde12c77b35cb47bde5c379"
   },
   "daemon_started_writing_canon_at": "2026-04-24T22:00:00Z",
   "daemon_started_witness_loop_at": "2026-04-25T13:00:00Z"

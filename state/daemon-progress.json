@@ -1,13 +1,13 @@
 {
-  "last_tick_at": "2026-08-30T20:27:20.631Z",
-  "last_run_id": "33333678738",
-  "canon_rows_after": 1013,
-  "last_heartbeat_hash": "aa2fa0f3d6104db95f78e12f7eecba128edc92f4172a20672ba2bcd19a3bd796",
+  "last_tick_at": "2026-08-31T03:13:14.386Z",
+  "last_run_id": "33353124079",
+  "canon_rows_after": 1015,
+  "last_heartbeat_hash": "a7b7eadce224b07f8145ea8a770def0d11a60151c11d7c3738de5b829e17f887",
   "last_witness": {
-    "claim_id": "q12-zenodo-kernel-paper",
+    "claim_id": "q13-zenodo-followup",
     "verdict": "PASS",
-    "detail": "recall 0.89 ≥ 0.6, numerics matched",
-    "row_hash": "39bc9f696f974e2d61e7a226e40fe25bc64065fcce6559dec2584817bba0a208"
+    "detail": "recall 0.70 ≥ 0.6, numerics matched",
+    "row_hash": "978683cc11fd7a72b54848dec18be2482c7cced7423a935a9c8fa18c5fae4ddb"
   },
   "daemon_started_writing_canon_at": "2026-04-24T22:00:00Z",
   "daemon_started_witness_loop_at": "2026-04-25T13:00:00Z"

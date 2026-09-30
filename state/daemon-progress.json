@@ -1,13 +1,13 @@
 {
-  "last_tick_at": "2026-09-30T17:30:12.216Z",
-  "last_run_id": "36751798839",
-  "canon_rows_after": 1253,
-  "last_heartbeat_hash": "0f2d4adb52cb673f8b9da8ae4e27ab2ac563a6c4f1d4cb654a77d48b486bcfba",
+  "last_tick_at": "2026-09-30T21:48:19.567Z",
+  "last_run_id": "36781726040",
+  "canon_rows_after": 1255,
+  "last_heartbeat_hash": "b75cc42f4cfdc09b90d3a4ac82dc17c4bd72b09611a76bb3aec8d0c1badd972e",
   "last_witness": {
-    "claim_id": "q13-zenodo-followup",
+    "claim_id": "q14-kernel-github-public",
     "verdict": "PASS",
-    "detail": "recall 0.70 ≥ 0.6, numerics matched",
-    "row_hash": "6db5cb888e0c6cff73e2812657b14a4db86e0545ad15b4a9e83447bd4f7ad63e"
+    "detail": "recall 0.60 ≥ 0.6, numerics matched",
+    "row_hash": "5db08fb58c6398f141ec0b06a411887a3b85fe3329bdeecbb62ed3490f51d4d0"
   },
   "daemon_started_writing_canon_at": "2026-04-24T22:00:00Z",
   "daemon_started_witness_loop_at": "2026-04-25T13:00:00Z"
